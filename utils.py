@@ -35,19 +35,24 @@ def periodic_task(source_folder, destination_folder, log_file):
             #       Returns the string chain to be stored in the log file
 def recursive_folder_copy(source_folder, destination_folder, to_save = ""):
 
-    if not os.path.exists(destination_folder): # Make sure the destination folder exists or create it if it doesn't
+    if not os.path.exists(destination_folder): 
+        # Make sure the destination folder exists or create it if it doesn't
         try:
             os.makedirs(destination_folder)
+            # Updating the variable for the log file content and printing console output
             to_save += "Directory '" + destination_folder + "' created.\n"
-            print("Directory '" + destination_folder + "' created")            # Saving for the log file
+            print("Directory '" + destination_folder + "' created")
         except:
-            to_save += "Directory '" + destination_folder + "' could not be created.\n"
-            print("Directory '" + destination_folder + "' could not be created")            # Saving for the log file
+            # Updating the variable for the log file content and printing console output
+            to_save += "Directory '" + destination_folder + "' could not be created.\n"            
+            print("Directory '" + destination_folder + "' could not be created")
 
-    else: # If the folder does exist, it may have files that do not exist in the source folder, and therefore, should be deleted
+    else: 
+        # If the folder does exist, it may have files that do not exist in the source folder, and therefore, should be deleted
         if os.listdir(destination_folder):
             for item in os.listdir(destination_folder):
-                if not item in os.listdir(source_folder):                   # If an item is not in the source folder, it will be deleted
+                if not item in os.listdir(source_folder):                   
+                    # If an item is not in the source folder, it will be deleted
                     item_path = os.path.join(destination_folder, item)
                     try:
                         item_type = "File '"
@@ -57,29 +62,34 @@ def recursive_folder_copy(source_folder, destination_folder, to_save = ""):
                             os.rmdir(item_path)
                         else:
                             os.remove(item_path)
+                            # Updating the variable for the log file content and printing console output
                         to_save += item_type +  item_path + "' deleted.\n"
-                        print(item_type +  item_path + "' deleted")            # Saving for the log file
+                        print(item_type +  item_path + "' deleted")            
                     except:
+                        # Updating the variable for the log file content and printing console output
                         to_save += "Item '" +  item_path + "' could not be deleted.\n"
-                        print("Item '" +  item_path + "' could not be deleted")            # Saving for the log file
+                        print("Item '" +  item_path + "' could not be deleted")            
     
-    if os.listdir(source_folder): # The copy begins
+    if os.listdir(source_folder): 
+        # The copy begins
         for item in os.listdir(source_folder):
             source_path = os.path.join(source_folder, item)
             destination_path = os.path.join(destination_folder, item)
-            if os.path.isdir(source_path):          # If it is a directory, we perform the backup of that directory onto the copy folder
+            if os.path.isdir(source_path):          
+                # If it is a directory, we perform the backup of that directory onto the copy folder
                 to_save += recursive_folder_copy(source_path, destination_path)
             else:
                 match_files = compare_files(source_path, destination_path)
                 if not match_files:
                     success_copy = copy_file(source_path, destination_path)
                     if not isinstance(success_copy, Exception):
-                        to_save += "File '" + source_path + "' copied to '" + destination_path + "' successfully.\n"            # Saving for the log file
+                        # Updating the variable for the log file content and printing console output
+                        print("File '" + source_path + "' copied to '" + destination_path + "' successfully.")  
+                        to_save += "File '" + source_path + "' copied to '" + destination_path + "' successfully.\n"            
                     else:
-                        to_save += "File '" + source_path + "' could not be copied to '" + destination_path + "': " + str(success_copy) + "\n"            # Saving for the log file
-                else:
-                    pass # The files were the same
-
+                        # Updating the variable for the log file content and printing console output
+                        print("File '" + source_path + "' could not be copied to '" + destination_path + "': " + str(success_copy))  
+                        to_save += "File '" + source_path + "' could not be copied to '" + destination_path + "': " + str(success_copy) + "\n"            
     return to_save
 
 
@@ -112,15 +122,18 @@ def recursively_delete(folder_path, to_save = ""):
             try:
                 if os.path.isdir(item_path):
                     item_type = "Directory '"
-                    to_save += recursively_delete(item_path, to_save)       # We delete the things inside first to have a track of all the deleted elements in our log
+                    to_save += recursively_delete(item_path, to_save)       
+                    # We delete the things inside first to have a track of all the deleted elements in our log and because rmdir can only delete empty folders
                     os.rmdir(item_path)
                 else:
                     os.remove(item_path)
+                    # Updating the variable for the log file content and printing console output
                 to_save += item_type +  item_path + "' deleted.\n"
-                print(item_type +  item_path + "' deleted")            # Saving for the log file
+                print(item_type +  item_path + "' deleted")            
             except:
+                # Updating the variable for the log file content and printing console output
                 to_save += "Item '" +  item_path + "' could not be deleted.\n"
-                print("Item '" +  item_path + "' could not be deleted")            # Saving for the log file
+                print("Item '" +  item_path + "' could not be deleted")            
     return to_save
 
 
@@ -130,10 +143,11 @@ def recursively_delete(folder_path, to_save = ""):
             #       Iterates through the file source while copying on the destination
             # Other alternatives:
             #       Using the method os.popen() or os.system() to perform system commands would be another effective way to copy the files, but 
-            #           it would be system dependent, due to the fact that not all systems use the same commands (cp in Linux, copy in Windows.)
+            #           it would be system dependent, due to the fact that not all systems use the same commands (cp in Linux, copy in Windows).
+            #           we have decided not to implement that option but could be done easily if required in the future.
             # Output:
             #       Returns True if the copy was completed succesfuly. Returns a type Exception if there was a problem during the copy
-def copy_file(source_path, destination_path, buffer_size=1024*1024):  # 1MB buffer size
+def copy_file(source_path, destination_path, buffer_size=1024*1024):
     try:
         with open(source_path, 'rb') as source_file:
             with open(destination_path, 'wb') as destination_file:
@@ -142,7 +156,6 @@ def copy_file(source_path, destination_path, buffer_size=1024*1024):  # 1MB buff
                     if not data:
                         break
                     destination_file.write(data)
-        print(f"File '{source_path}' copied to '{destination_path}' successfully.")            # Saved after this function for the log file
         return True
     except Exception as e:
         print(f"Error: {e}")

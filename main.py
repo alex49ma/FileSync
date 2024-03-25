@@ -1,6 +1,6 @@
 import schedule
 import time
-from datetime import datetime
+import platform
 import os
 import utils
 
@@ -34,44 +34,64 @@ while True:
             break  # Exit the loop if the input is valid
         else:
             print("Please enter a valid path of an existing folder.")
-    except:
-        print("Please enter a valid folder path. (other error)")
+    except Exception as e:
+        print("Please enter a valid folder path: " + str(e))
  
 destination_folder = ""           
 while True:
     destination_folder = input("Please enter the complete path of the selected destination folder (if not existing, it will be created): ")
     if not os.path.exists(destination_folder):
         try:
-            if not destination_folder == "" or not destination_folder == source_folder:
-                if not any(char in r'*?"<>|' for char in destination_folder):
-                    if not destination_folder.upper() in reserved_names:
-                        break  # Exit the loop if the input is valid
+            if not (destination_folder == "" or destination_folder == source_folder):
+                if not any(char in r'*?"<>|' for char in destination_folder) and destination_folder.count(":") == 1:
+                    if platform.system() == "Windows":
+                        # If the system is Windows, it has several directory names that are restricted and cannot be modified
+                        folder_names = destination_folder.upper().split("\\")
+                        deny_access = False
+                        for name in folder_names:
+                            if name in reserved_names:
+                                deny_access = True
+                                print("Name not valid. The path is using a reserved name")
+                                break  
+                            # The flag deny_access will be true to not let you continue if you are using any of the reserved names in Windows
+                        if not deny_access:
+                            break
                     else:
-                        print("Name not valid. The folder is using a reserved name")
+                        break
                 else:
-                    print("Name not valid, the folder cannot contain special characters like '*?\"<>|'")
+                    print("Name not valid, the folder path cannot contain special characters like '*?\"<>|'")
             else:
                 print("Please enter a valid folder path and folder name.")
-        except:
-            print("Please enter a valid folder path. (other error)")  
+        except Exception as e:
+            print("Please enter a valid folder path: " + str(e))  
 
 log_file = ""
 while True:
-    log_file = input("Please enter the complete path of the desired log file (if not existing, it will be created) (if existing, will be appended to the end): ")
+    log_file = input("Please enter the complete path (and name) of the desired log file (if not existing, it will be created) (if existing, it will be appended to the end): ")
     if not os.path.exists(log_file):
         try:
-            if not log_file == "" or not log_file == source_folder:
-                if not any(char in r'*?"<>|' for char in log_file):
-                    if not log_file.upper() in reserved_names:
-                        break  # Exit the loop if the input is valid
+            if not log_file == "":
+                if not any(char in r'*?"<>|' for char in log_file) and destination_folder.count(":") == 1:
+                    if platform.system() == "Windows": 
+                        # If the system is Windows, it has several directory names that are restricted and cannot be modified
+                        folder_names = destination_folder.upper().split("\\")
+                        deny_access = False
+                        for name in folder_names:
+                            if name in reserved_names:
+                                deny_access = True
+                                print("Name not valid. The path is using a reserved name")
+                                break  
+                            # The flag deny_access will be true to not let you continue if you are using any of the reserved names in Windows
+                        if not deny_access:
+                            break
                     else:
-                        print("Name not valid. The file is using a reserved name")
+                        break
                 else:
-                    print("Name not valid, the file cannot contain special characters like '*?\"<>|'")
+                    print("Name not valid, the file path cannot contain special characters like '*?\"<>|'")
             else:
                 print("Please enter a valid file path and file name.")
-        except:
-            print("Please enter a valid file path. (other error)")
+        except Exception as e:
+            print("Please enter a valid file path: " + str(e))
 
 
 schedule.every(number).seconds.do(lambda: utils.periodic_task(source_folder, destination_folder, log_file))
